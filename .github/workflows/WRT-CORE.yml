@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2026 VIKINGYFY
 
-#云编译公用核心
+# 云编译公用核心
 name: WRT-CORE
 
 on:
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Projects
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Initialization Environment
         env:
@@ -115,7 +115,7 @@ jobs:
       - name: Check Caches
         id: check-cache
         if: env.WRT_TEST != 'true'
-        uses: actions/cache@main
+        uses: actions/cache@v4
         with:
           key: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_HASH}}
           restore-keys: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}
@@ -139,10 +139,10 @@ jobs:
             echo "caches missed!"
           fi
 
-          if ${{steps.check-cache.outputs.cache-hit != 'true'}}; then
-            CACHE_LIST=$(gh cache list --key "$WRT_CONFIG-$WRT_INFO" | cut -f 1)
-            for CACHE_KEY in $CACHE_LIST; do
-              gh cache delete $CACHE_KEY
+          if [ "${{ steps.check-cache.outputs.cache-hit }}" != 'true' ]; then
+            CACHE_LIST=$(gh cache list --json id --key "$WRT_CONFIG-$WRT_INFO" --jq '.[].id' 2>/dev/null)
+            for CACHE_ID in $CACHE_LIST; do
+              gh cache delete "$CACHE_ID"
             done
 
             echo "caches cleanup done!"
@@ -227,16 +227,13 @@ jobs:
           fi
 
       - name: Release Firmware
-        uses: softprops/action-gh-release@master
+        if: env.WRT_TEST != 'true'
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_BRANCH}}-${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
           body: |
-            这是个平台固件包，内含多个设备！
-            请注意选择你需要的设备固件！
-            不要问，刷就完事了！
-
-            全系带开源硬件加速，别问了！
+            Hiveton H5000M (MT5700M) 定制固件 · 基于 ImmortalWrt
 
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
@@ -248,8 +245,8 @@ jobs:
             登录地址：${{env.WRT_IP}}
             登录密码：${{env.WRT_PW}}
 
-            WIFI名称：${{env.WRT_SSID}}
-            WIFI密码：${{env.WRT_WORD}}
+            WIFI 名称：${{env.WRT_SSID}}
+            WIFI 密码：${{env.WRT_WORD}}
 
             内核版本：${{env.WRT_KVER}}
             插件列表：${{env.WRT_LIST}}
