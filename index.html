@@ -2,7 +2,9 @@
 <html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 可访问性修复：移除 maximum-scale / user-scalable=no，允许用户缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#020617">
     <meta name="description" content="Hiveton H5000M 鼎桥 MT5700M 5G CPE 定制 ImmortalWrt 固件 - 每日自动构建，完美支持 5G + Wi-Fi 7 + 智能温控">
     <meta name="keywords" content="H5000M, ImmortalWrt, 鼎桥 MT5700M, OpenWrt, 5G CPE, 路由器固件">
     <title>Hiveton H5000M • ImmortalWrt 鼎桥5G定制固件</title>
@@ -38,6 +40,9 @@
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 锚点跳转时避开固定导航 + 吸顶时间栏 */
+        section[id], header[id] { scroll-margin-top: 128px; }
 
         .custom-bg {
             position: fixed;
@@ -117,6 +122,38 @@
         .hero-btn:hover::after {
             transform: translateX(200%) skewX(-15deg);
         }
+
+        /* 滚动入场动画 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal.is-visible {
+            opacity: 1;
+            transform: none;
+        }
+        /* 卡片级联延迟 */
+        .stagger > .reveal:nth-child(2) { transition-delay: 0.08s; }
+        .stagger > .reveal:nth-child(3) { transition-delay: 0.16s; }
+        .stagger > .reveal:nth-child(4) { transition-delay: 0.24s; }
+
+        /* 键盘可访问性：统一焦点样式 */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--accent-cyan);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        /* 尊重用户的减少动态偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .ambient-glow { animation: none; }
+            .hero-btn::after { display: none; }
+        }
     </style>
 </head>
 <body class="text-slate-200 selection:bg-cyan-500/30 selection:text-white relative overflow-x-hidden">
@@ -124,10 +161,13 @@
     <div class="custom-bg"></div>
     <div class="ambient-glow"></div>
 
+    <!-- 顶部阅读进度条 -->
+    <div id="progress" class="fixed top-0 left-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 z-[60] w-0 transition-[width] duration-150 ease-out" role="presentation"></div>
+
     <!-- 导航 -->
     <nav class="fixed top-0 w-full bg-slate-950/70 backdrop-blur-xl border-b border-white/10 z-50">
         <div class="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
-            <a href="#" class="flex items-center gap-3 group">
+            <a href="#" class="flex items-center gap-3 group" aria-label="H5000M 首页">
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 group-hover:scale-105 transition-transform">
                     <i class="fas fa-wifi text-white text-sm"></i>
                 </div>
@@ -139,15 +179,31 @@
                 <a href="#plugins" class="text-slate-300 hover:text-cyan-400 transition-colors">专属插件</a>
             </div>
 
-            <a href="#download" 
-               class="px-6 py-2 bg-white text-slate-900 font-bold text-sm rounded-full hover:bg-cyan-300 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] active:scale-95 transition-all">
-                极速下载
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="#download" 
+                   class="px-6 py-2 bg-white text-slate-900 font-bold text-sm rounded-full hover:bg-cyan-300 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] active:scale-95 transition-all">
+                    极速下载
+                </a>
+                <!-- 移动端菜单按钮 -->
+                <button id="menuBtn" type="button"
+                        class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-200 hover:bg-white/10 transition-colors"
+                        aria-label="切换导航菜单" aria-expanded="false" aria-controls="mobileMenu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 移动端下拉菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-xl">
+            <div class="px-6 py-3 flex flex-col">
+                <a href="#features" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">硬件特性</a>
+                <a href="#plugins" class="py-3 text-slate-300 hover:text-cyan-400 transition-colors">专属插件</a>
+            </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 flex flex-col items-center justify-center text-center px-6 min-h-[92vh]">
+    <header id="top" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 flex flex-col items-center justify-center text-center px-6 min-h-[92vh]">
         <div class="inline-flex items-center gap-2.5 bg-white/5 border border-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-xs sm:text-sm mb-10 shadow-lg shadow-black/20">
             <span class="relative flex h-2.5 w-2.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -167,7 +223,7 @@
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M/releases/latest" target="_blank"
+            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M/releases/latest" target="_blank" rel="noopener"
                class="hero-btn group flex items-center justify-center gap-3 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-lg px-10 py-4 rounded-2xl transition-all active:scale-95 shadow-xl shadow-cyan-500/20 w-full sm:w-auto">
                 <i class="fas fa-rocket group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform duration-300"></i>
                 <span>获取最新固件</span>
@@ -185,21 +241,20 @@
     <div class="border-y border-white/5 bg-slate-950/50 backdrop-blur-md py-3 sticky top-16 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-6 flex justify-center items-center gap-3 text-xs sm:text-sm">
             <i class="fas fa-terminal text-slate-500"></i>
-            <span id="time" class="font-mono text-emerald-400/90 tracking-widest drop-shadow-sm">_</span>
+            <span id="time" class="font-mono text-emerald-400/90 tracking-widest drop-shadow-sm" aria-live="off">_</span>
         </div>
     </div>
 
     <!-- 特性 -->
     <section id="features" class="py-24 lg:py-32 relative z-10">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16 lg:mb-20">
+            <div class="text-center mb-16 lg:mb-20 reveal">
                 <h2 class="text-3xl lg:text-5xl font-bold mb-4 drop-shadow-lg">次世代网络中枢</h2>
                 <p class="text-slate-400">为高性能网络环境而生</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- 细节优化：全部替换为 FontAwesome 科技感图标 -->
-                <div class="glass-card rounded-3xl p-8 flex flex-col group">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stagger">
+                <div class="glass-card rounded-3xl p-8 flex flex-col group reveal">
                     <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl text-blue-400 mb-6 group-hover:scale-110 transition-transform shadow-inner">
                         <i class="fas fa-code-branch"></i>
                     </div>
@@ -207,7 +262,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">与上游同步，深度优化 IPv6 协议栈及核心路由组件。</p>
                 </div>
                 
-                <div class="glass-card rounded-3xl p-8 flex flex-col group">
+                <div class="glass-card rounded-3xl p-8 flex flex-col group reveal">
                     <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl text-cyan-400 mb-6 group-hover:scale-110 transition-transform shadow-inner">
                         <i class="fas fa-microchip"></i>
                     </div>
@@ -215,7 +270,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">原生 5G 驱动适配，支持基站状态监控与 AT 指令透传。</p>
                 </div>
                 
-                <div class="glass-card rounded-3xl p-8 flex flex-col group">
+                <div class="glass-card rounded-3xl p-8 flex flex-col group reveal">
                     <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl text-emerald-400 mb-6 group-hover:scale-110 transition-transform shadow-inner">
                         <i class="fas fa-fan"></i>
                     </div>
@@ -223,7 +278,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">内核级 PWM 调速，在静音体验与极致散热间完美平衡。</p>
                 </div>
                 
-                <div class="glass-card rounded-3xl p-8 flex flex-col group">
+                <div class="glass-card rounded-3xl p-8 flex flex-col group reveal">
                     <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl text-purple-400 mb-6 group-hover:scale-110 transition-transform shadow-inner">
                         <i class="fas fa-network-wired"></i>
                     </div>
@@ -237,14 +292,13 @@
     <!-- 插件 -->
     <section id="plugins" class="py-24 lg:py-32 bg-white/[0.015] border-y border-white/5 backdrop-blur-sm relative z-10">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16 lg:mb-20">
+            <div class="text-center mb-16 lg:mb-20 reveal">
                 <h2 class="text-3xl lg:text-5xl font-bold mb-4 drop-shadow-lg">专属插件生态</h2>
                 <p class="text-cyan-400 font-medium">Powered by FAN789 社区</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- 细节优化：统一图标风格 -->
-                <div class="glass-card rounded-3xl p-8 group">
+            <div class="grid md:grid-cols-3 gap-6 stagger">
+                <div class="glass-card rounded-3xl p-8 group reveal">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-4xl text-slate-500 group-hover:text-cyan-400 transition-colors">
                             <i class="fas fa-tower-broadcast"></i>
@@ -255,7 +309,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">提供直观的 5G 模组 WebUI 监控、网络频段自定义锁定及完整的短信收发功能。</p>
                 </div>
                 
-                <div class="glass-card rounded-3xl p-8 group">
+                <div class="glass-card rounded-3xl p-8 group reveal">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-4xl text-slate-500 group-hover:text-emerald-400 transition-colors">
                             <i class="fas fa-temperature-half"></i>
@@ -266,7 +320,7 @@
                     <p class="text-slate-400 text-sm leading-relaxed">专属硬件温控策略面板，支持自定义多级温度阈值与风扇转速百分比曲线映射。</p>
                 </div>
                 
-                <div class="glass-card rounded-3xl p-8 group">
+                <div class="glass-card rounded-3xl p-8 group reveal">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-4xl text-slate-500 group-hover:text-purple-400 transition-colors">
                             <i class="fas fa-route"></i>
@@ -285,13 +339,13 @@
         <!-- 底部环境光晕 -->
         <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-3xl h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none"></div>
         
-        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10 reveal">
             <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter mb-6 drop-shadow-xl">准备好升级你的网络了吗？</h2>
             <p class="text-slate-400 text-sm sm:text-base mb-10 max-w-xl mx-auto">
                 固件由 Actions 每日定时构建，建议始终刷入最新版本以获取最佳稳定性。
             </p>
             
-            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M/releases/latest" target="_blank"
+            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M/releases/latest" target="_blank" rel="noopener"
                class="group inline-flex items-center gap-4 bg-white hover:bg-cyan-50 text-slate-900 font-bold text-lg px-10 py-5 rounded-2xl transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.15)]">
                 <i class="fab fa-github text-2xl group-hover:rotate-12 transition-transform duration-300"></i>
                 <span>前往 GitHub 下载固件</span>
@@ -307,7 +361,7 @@
                 <span class="w-1 h-1 bg-slate-700 rounded-full hidden sm:inline-block"></span>
                 <span class="hidden sm:inline-block">OpenWrt Auto-Build Project</span>
             </div>
-            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M" target="_blank" class="text-slate-500 hover:text-white transition-colors p-2">
+            <a href="https://github.com/LianXia233/OpenWRT-CI-H5000M" target="_blank" rel="noopener" class="text-slate-500 hover:text-white transition-colors p-2" aria-label="GitHub 仓库">
                 <span class="sr-only">GitHub</span>
                 <i class="fab fa-github text-xl"></i>
             </a>
@@ -315,31 +369,77 @@
     </footer>
 
     <script>
-        // 时间显示及初始化优化
-        const initTimeBar = () => {
+        // —— 时间栏：手动拼接，避免 toLocaleString 在不同语言环境下的格式漂移 ——
+        (function initTimeBar() {
             const el = document.getElementById('time');
-            const options = {
-                timeZone: 'Asia/Shanghai',
-                hour12: false,
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            
+            if (!el) return;
+            const pad = (n) => String(n).padStart(2, '0');
             const updateTime = () => {
                 const now = new Date();
-                const str = now.toLocaleString('zh-CN', options).replace(/\//g, '-');
+                // 统一换算为 UTC+8 (CST)，不依赖运行环境时区
+                const cst = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 8 * 3600000);
+                const str = `${cst.getFullYear()}-${pad(cst.getMonth() + 1)}-${pad(cst.getDate())} `
+                          + `${pad(cst.getHours())}:${pad(cst.getMinutes())}:${pad(cst.getSeconds())}`;
                 el.textContent = `sys_time: ${str} [CST]`;
             };
-
             updateTime();
             setInterval(updateTime, 1000);
-        };
-        
-        document.addEventListener('DOMContentLoaded', initTimeBar);
+        })();
+
+        // —— 滚动入场动画：IntersectionObserver 触发，进入视口后一次性显示 ——
+        (function initReveal() {
+            const els = document.querySelectorAll('.reveal');
+            if (!('IntersectionObserver' in window) || !els.length) {
+                els.forEach((el) => el.classList.add('is-visible'));
+                return;
+            }
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            els.forEach((el) => io.observe(el));
+        })();
+
+        // —— 顶部阅读进度条 ——
+        (function initProgress() {
+            const bar = document.getElementById('progress');
+            if (!bar) return;
+            const onScroll = () => {
+                const doc = document.documentElement;
+                const max = doc.scrollHeight - window.innerHeight;
+                const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+                bar.style.width = pct + '%';
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+
+        // —— 移动端导航菜单 ——
+        (function initMenu() {
+            const btn = document.getElementById('menuBtn');
+            const menu = document.getElementById('mobileMenu');
+            if (!btn || !menu) return;
+            btn.addEventListener('click', () => {
+                const willOpen = menu.classList.contains('hidden');
+                if (willOpen) {
+                    menu.classList.remove('hidden');
+                    btn.setAttribute('aria-expanded', 'true');
+                } else {
+                    menu.classList.add('hidden');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+            menu.querySelectorAll('a').forEach((a) =>
+                a.addEventListener('click', () => {
+                    menu.classList.add('hidden');
+                    btn.setAttribute('aria-expanded', 'false');
+                })
+            );
+        })();
     </script>
 </body>
 </html>
