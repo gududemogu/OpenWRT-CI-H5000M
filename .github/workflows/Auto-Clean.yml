@@ -4,10 +4,10 @@
 name: Auto-Clean
 
 on:
-  # 自动清理：每天 05:00 (CST) 在自动构建前执行
+  # 自动清理：每天 05:00 (CST) 在自动构建前执行，默认清理所有 Releases
   schedule:
     - cron: 0 21 * * *
-  # 手动清理
+  # 手动清理（默认同样清理所有 Releases）
   workflow_dispatch:
 
 permissions: write-all
@@ -21,7 +21,9 @@ jobs:
         with:
           gh_token: ${{secrets.GITHUB_TOKEN}}
           delete_releases: true
-          releases_keep_latest: 1
-          delete_tags: false
+          # 0 = 默认清理所有 Releases（不保留最新）
+          releases_keep_latest: 0
+          # 清理 Release 时一并删除关联 Tag，避免残留
+          delete_tags: true
           delete_workflows: true
           workflows_keep_day: 30
