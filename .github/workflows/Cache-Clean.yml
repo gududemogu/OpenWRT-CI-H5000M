@@ -2,9 +2,8 @@
 # Copyright (C) 2026 VIKINGYFY
 
 name: Cache-Clean
-
+# 仅手动触发，只删除WRT固件编译缓存
 on:
-  # 仅手动触发，只删除WRT固件编译缓存
   workflow_dispatch:
 
 permissions:
