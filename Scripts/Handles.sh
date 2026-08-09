@@ -270,3 +270,22 @@ fi
 if [ -d "./package/qmodem" ];then
     chmod +x ./package/qmodem/root/etc/init.d/*
 fi
+## Tailscale
+if [ -d "./package/luci-app-tailscale" ];then
+    chmod +x ./package/luci-app-tailscale/root/etc/init.d/*
+fi
+
+## ZeroTier
+if [ -d "./package/luci-app-zerotier" ];then
+    chmod +x ./package/luci-app-zerotier/root/etc/init.d/*
+fi
+
+## iStore商店
+if [ -d "./package/luci-app-store" ];then
+    chmod +x ./package/luci-app-store/root/etc/init.d/*
+fi
+
+## Lucky
+if [ -d "./package/luci-app-lucky" ];then
+    chmod +x ./package/luci-app-lucky/root/etc/init.d/*
+fi
