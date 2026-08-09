@@ -1,31 +1,24 @@
-# SPDX-License-Identifier: MIT
-# Copyright (C) 2026 VIKINGYFY
-
-name: Cache-Clean
-# 仅手动触发，只删除WRT固件编译缓存
+name: Cache‑Clean
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  actions: write   # 删除cache必须要有 actions:write 权限
-
 jobs:
-  cleanup:
-    runs-on: ubuntu-latest
+  clean:
+    runs-on: ubuntu‑latest
     steps:
-      - name: Checkout Projects
-        uses: actions/checkout@v5
-
-      - name: Clean only WRT build cache (key prefix: MEDIATEK-WIFI-YES-)
-        run: |
-          set +e
-          # 筛选出key以 MEDIATEK-WIFI-YES- 开头的缓存ID
-          CACHE_IDS=$(gh cache list --json id --key "MEDIATEK-WIFI-YES-" --jq '.[].id')
-          if [ -z "$CACHE_IDS" ]; then
-            echo "未找到匹配的WRT编译缓存，无需清理"
-            exit 0
-          fi
-          echo "$CACHE_IDS" | xargs -I {} gh cache delete {}
-          echo "WRT固件编译缓存清理完成"
-          exit 0
+      - uses: actions/checkout@v4
+      - name: Delete cache
+        uses: actions/github‑script@v7
+        with:
+          script: |
+            const caches = await github.rest.actions.listRepositoriesCaches({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            })
+            for(const item of caches.data.actions_caches){
+              await github.rest.actions.deleteRepositoryCache({
+                owner:context.repo.owner,
+                repo:context.repo.repo,
+                cache_id:item.id
+              })
+            }
