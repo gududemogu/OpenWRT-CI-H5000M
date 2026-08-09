@@ -40,7 +40,9 @@ on:
         type: boolean
 
 # CI 权限
-permissions: write-all
+permissions:
+  contents: write
+  pull-requests: write
 
 # CI 任务
 jobs:
