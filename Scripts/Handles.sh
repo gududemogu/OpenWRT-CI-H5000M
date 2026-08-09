@@ -256,3 +256,17 @@ if [ -f "$RUST_FILE" ]; then
 		echo "rust fix failed; continuing!"
 	fi
 fi
+## H5000M风扇控制插件权限
+if [ -d "./package/luci-app-h5000m-fancontrol" ];then
+    chmod +x ./package/luci-app-h5000m-fancontrol/root/etc/init.d/*
+fi
+
+## Nikki代理脚本权限
+if [ -d "./package/qmodem" ];then
+    find ./package/qmodem -type f \( -name "*.sh" -o -path "*/init.d/*" \) -exec chmod +x {} \;
+fi
+
+## QModem NEXT 底层服务权限（仓库目录名仍然叫 qmodem）
+if [ -d "./package/qmodem" ];then
+    chmod +x ./package/qmodem/root/etc/init.d/*
+fi
