@@ -1,14 +1,15 @@
 # 科学上网插件
 CONFIG_PACKAGE_luci-app-homeproxy=y
+CONFIG_PACKAGE_luci-app-nikki=y
 
 # H5000M 风扇控制
 CONFIG_PACKAGE_luci-app-h5000m-fancontrol=y
 # H5000M 网络模式
 CONFIG_PACKAGE_luci-app-h5000m-netmode=y
 # MT5700M 主插件
-CONFIG_PACKAGE_luci-app-mt5700m=y
+CONFIG_PACKAGE_luci-app-mt5700m=n
 # MT5700M 中文语言
-CONFIG_PACKAGE_luci-i18n-mt5700m-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-mt5700m-zh-cn=n
 
 # EasyTier 插件
 CONFIG_PACKAGE_easytier=y
