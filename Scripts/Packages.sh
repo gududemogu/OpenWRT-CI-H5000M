@@ -64,6 +64,8 @@ UPDATE_PACKAGE "luci-app-zerotier" "sirpdboy/luci-app-zerotier" "main"
 UPDATE_PACKAGE "luci-app-store" "linkease/istore" "main"
 ## 新增 Lucky
 UPDATE_PACKAGE "luci-app-lucky" "gdy666/luci-app-lucky" "main"
+# Cloudflare Tunnel cloudflared
+UPDATE_PACKAGE "luci-app-cloudflared" "hairlessheretic/openwrt-cloudflared" "main"
 
 #UPDATE_PACKAGE "athena-led" "unraveloop/JDC-AX6600-Athena-LED-Controller" "main"
 UPDATE_PACKAGE "ddns-go" "sirpdboy/luci-app-ddns-go" "main"
