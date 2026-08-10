@@ -58,7 +58,7 @@ UPDATE_PACKAGE "passwall" "Openwrt-Passwall/openwrt-passwall" "main" "pkg"
 UPDATE_PACKAGE "passwall2" "Openwrt-Passwall/openwrt-passwall2" "main" "pkg"
 
 UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
-## 新增 ZeroTier
+## ZeroTier luci界面，底层zerotier程序来自immortalwrt feeds
 UPDATE_PACKAGE "luci-app-zerotier" "sirpdboy/luci-app-zerotier" "main"
 ## 新增 iStore 商店
 UPDATE_PACKAGE "luci-app-store" "linkease/istore" "main"
