@@ -42,10 +42,9 @@ on:
         type: string
       WRT_TEST:
         required: false
-        type: boolean  # 修复：与上层 boolean 类型匹配
+        type: boolean
 
 env:
-  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   WRT_CONFIG: ${{inputs.WRT_CONFIG}}
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
@@ -61,7 +60,6 @@ env:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   core:
@@ -92,8 +90,8 @@ jobs:
 
       - name: Initialization Values
         run: |
-          # 修复：使用标准时区 Asia/Shanghai 替代非标准 TZ=UTC-8
-          echo "WRT_DATE=$(TZ=Asia/Shanghai date +"%y.%m.%d-%H.%M.%S")" >> $GITHUB_ENV
+          # 过滤冒号，防止git tag非法字符
+          echo "WRT_DATE=$(TZ=Asia/Shanghai date +"%y.%m.%d-%H.%M.%S" | tr ':' '.')" >> $GITHUB_ENV
           echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}" >> $GITHUB_ENV
           echo "WRT_INFO=${WRT_SOURCE%%/*}" >> $GITHUB_ENV
           echo "WRT_TARGET=$(grep -m 1 -oP '^CONFIG_TARGET_\K[\w]+(?=\=y)' ./Config/$WRT_CONFIG.txt)" >> $GITHUB_ENV
@@ -230,11 +228,13 @@ jobs:
       - name: Release Firmware
         if: inputs.WRT_TEST != true
         uses: softprops/action-gh-release@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{env.WRT_CONFIG}}-${{env.WRT_INFO}}-${{env.WRT_BRANCH}}-${{env.WRT_DATE}}
           files: ./wrt/upload/*.*
-          fail_on_tag_exists: false
           append_body: true
+          overwrite_files: true
           body: |
             Hiveton H5000M (MT5700M) 定制固件 · 基于 ImmortalWrt
 
