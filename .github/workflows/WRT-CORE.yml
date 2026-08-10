@@ -152,17 +152,17 @@ jobs:
             echo "caches cleanup attempted (token may lack cache delete permission)"
           fi
 
-      - name: Update Feeds
-        run: |
-          cd ./wrt/
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
       - name: Custom Packages
         run: |
           cd ./wrt/package/
           $GITHUB_WORKSPACE/Scripts/Packages.sh
           $GITHUB_WORKSPACE/Scripts/Handles.sh
+
+      - name: Update Feeds
+        run: |
+          cd ./wrt/
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: Custom Settings
         run: |
